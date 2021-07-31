@@ -1,4 +1,4 @@
-#include "tests/test-unit-common.hpp"
+#include "tests/test-common.hpp"
 
 template<typename Type>
 class A {

@@ -1,4 +1,4 @@
-#include "tests/test-unit-common.hpp"
+#include "tests/test-common.hpp"
 
 class A {
     int32_t _index{};

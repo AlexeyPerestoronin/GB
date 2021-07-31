@@ -1,4 +1,4 @@
-#include "tests/test-unit-common.hpp"
+#include "tests/test-common.hpp"
 
 int main(int argc, char *argv[]) {
   ::testing::InitGoogleTest(&argc, argv);

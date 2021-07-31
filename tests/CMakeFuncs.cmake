@@ -1,3 +1,5 @@
+include("${CMAKE_SOURCE_DIR}/CMakeFuncs.cmake")
+
 # brief: add Google tests to current test-project
 # note1: the google tests project downloads from its git-repository and builds before building the test-protect
 # note2: if google tests has been download and build early it not be do again
@@ -42,34 +44,48 @@ endfunction(AddGoogleTests)
 
 # brief: creates unit tests as one test project
 function(AddUnitTests)
-    file(GLOB TESTS_FILES_HPP "./test-*.hpp")
+    # find all source files for unit-tests
+    set(listAvalibleFilesTemplates "test-unit.+\\.h" "test-unit.+\\.hpp" "test-unit-.+\\.cpp")
+    FindAllSourceFiles("Find all files for unit-tests" "${CMAKE_CURRENT_SOURCE_DIR}" "" "${listAvalibleFilesTemplates}" listTargetSourceUnitTestsFiles)
 
-    # unit-test file template
-    file(GLOB UNIT_TESTS_FILES_CPP "./test-unit-*.cpp")
+    # find all base files for tests
+    set(listAvalibleFilesTemplates "test-common.hpp" "test-main.cpp")
+    FindAllSourceFiles("Find base files for tests" "${CMAKE_CURRENT_SOURCE_DIR}" "" "${listAvalibleFilesTemplates}" listTargetTestsFiles)
 
-    add_executable(${UNIT_TESTS_EXE_NAME} ${UNIT_TESTS_FILES_CPP} ${TESTS_FILES_HPP})
+    # compose all founded files by directory
+    ComposeFileBySourceGroup("${CMAKE_CURRENT_SOURCE_DIR}" "${listTargetSourceUnitTestsFiles}")
+    ComposeFileBySourceGroup("${CMAKE_CURRENT_SOURCE_DIR}" "${listTargetTestsFiles}")
+
+    add_executable(${UNIT_TESTS_EXE_NAME} ${listTargetSourceUnitTestsFiles} ${listTargetTestsFiles})
     target_compile_features(${UNIT_TESTS_EXE_NAME} PRIVATE ${PROJECT_CPP_STANDART})
-    target_link_libraries(${UNIT_TESTS_EXE_NAME} ${LIB_NAME})
     target_link_libraries(${UNIT_TESTS_EXE_NAME} GTest::gtest_main)
     target_link_libraries(${UNIT_TESTS_EXE_NAME} GTest::gmock_main)
+    target_link_libraries(${UNIT_TESTS_EXE_NAME} ${LIB_NAME})
 endfunction(AddUnitTests)
 
 
 # brief: creates suit tests
 # note1: one suit test is creates from one code file and presents as unique project
 function(AddSuitTests)
-    file(GLOB TESTS_FILES_HPP "./test-*.hpp")
+    # find all source files for suit-tests
+    set(listAvalibleFilesTemplates "test-suit.+\\.h" "test-suit.+\\.hpp" "test-suit-.+\\.cpp")
+    FindAllSourceFiles("Find all files for suit-tests" "${CMAKE_CURRENT_SOURCE_DIR}" "" "${listAvalibleFilesTemplates}" listTargetSourceSuitTestsFiles)
 
-    # suit-test file template
-    file(GLOB SUIT_TESTS_FILES_CPP "./test-suit-*.cpp")
+    # find all base files for tests
+    set(listAvalibleFilesTemplates "test-common.hpp" "test-main.cpp")
+    FindAllSourceFiles("Find base files for tests" "${CMAKE_CURRENT_SOURCE_DIR}" "" "${listAvalibleFilesTemplates}" listTargetTestsFiles)
 
-    foreach(SUIT_TEST ${SUIT_TESTS_FILES_CPP})
-        get_filename_component(SUIT_TEST_FILE_NAME ${SUIT_TEST} NAME_WE)
-        set(SUIT_TEST_EXE_NAME ${LIB_NAME}-${SUIT_TEST_FILE_NAME})
-        add_executable(${SUIT_TEST_EXE_NAME} ${SUIT_TEST} ${TESTS_FILES_HPP})
-        target_compile_features(${SUIT_TEST_EXE_NAME} PRIVATE ${PROJECT_CPP_STANDART})
-        target_link_libraries(${SUIT_TEST_EXE_NAME} ${LIB_NAME})
-        target_link_libraries(${SUIT_TEST_EXE_NAME} GTest::gtest_main)
-        target_link_libraries(${SUIT_TEST_EXE_NAME} GTest::gmock_main)
+    # compose all founded files by directory
+    ComposeFileBySourceGroup("${CMAKE_CURRENT_SOURCE_DIR}" "${listTargetSourceSuitTestsFiles}")
+    ComposeFileBySourceGroup("${CMAKE_CURRENT_SOURCE_DIR}" "${listTargetTestsFiles}")
+
+    foreach(oneSuitTestFile ${listTargetSourceSuitTestsFiles})
+        get_filename_component(suitTestFileName ${oneSuitTestFile} NAME_WE)
+        set(suitTestExeName ${LIB_NAME}-${suitTestFileName})
+        add_executable(${suitTestExeName} ${oneSuitTestFile} ${listTargetTestsFiles})
+        target_compile_features(${suitTestExeName} PRIVATE ${PROJECT_CPP_STANDART})
+        target_link_libraries(${suitTestExeName} GTest::gtest_main)
+        target_link_libraries(${suitTestExeName} GTest::gmock_main)
+        target_link_libraries(${suitTestExeName} ${LIB_NAME})
     endforeach()
 endfunction(AddSuitTests)
