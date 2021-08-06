@@ -1,7 +1,16 @@
 #include "tests/test-common.hpp"
 
-bool F() {
-    return false;
+#ifdef _DEBUG
+#define CHECK_POINTER(pointer) if (!pointer) \
+	throw std::exception("null pointer");
+#else
+#define CHECK_POINTER();
+#endif
+
+bool F(int* pointer) {
+    CHECK_POINTER(pointer);
+
+	return true;
 }
 
 TEST(Streams1, Example1) {
@@ -9,7 +18,7 @@ TEST(Streams1, Example1) {
     EXPECT_FALSE(flag1);
     bool flag2{ false };
     EXPECT_FALSE(flag2);
-    EXPECT_FALSE(F());
+    //EXPECT_FALSE(F());
     EXPECT_FALSE(0);
     EXPECT_TRUE(-3);
     EXPECT_TRUE(+3);
@@ -27,6 +36,7 @@ struct MyException : std::exception {
 };
 
 void G() {
+    //int i = MAX(FGG, 2);
     throw MyException{};
 }
 
